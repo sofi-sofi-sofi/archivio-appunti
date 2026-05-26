@@ -2,10 +2,62 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Test Archivio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matora 1.0 - Archivio Appunti</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        /* Stile del Banner di Avviso Arancione */
+        .alert-banner {
+            background-color: #ffeaa7;
+            border-left: 6px solid #e67e22;
+            color: #d35400;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-weight: 500;
+            position: relative;
+        }
+        .alert-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Il mio Hub di Studio è finalmente Online!</h1>
-    <p>Se vedi questa pagina, la base è pronta al 100%.</p>
+
+    <div class="container">
+        <div class="alert-banner">
+            <div class="alert-title">⚠️ Attenzione: Scadenza Token AI</div>
+            Il token di autenticazione GitHub Models scadrà il <strong>26/05/2027</strong>. 
+            <br><em>Cosa comporta:</em> Dopo questa data, lo script di analisi automatica degli appunti smetterà di funzionare e restituirà un errore di autenticazione finché non verrà generato e sostituito un nuovo Token Classic (ghp_) nelle impostazioni del codice.
+        </div>
+
+        <h1>Il mio Hub di Studio è Online!</h1>
+        <p>Benvenuta nel tuo archivio. I file elaborati dall'AI verranno mostrati qui sotto in tempo reale.</p>
+        <hr>
+        
+        <div id="contenuto-appunti">
+            <p><em>Nessun appunto selezionato. Esegui lo script sul PC per caricare i dati.</em></p>
+        </div>
+    </div>
+
 </body>
 </html>
