@@ -26,6 +26,29 @@ NOME_REPOSITORY = "sofi-sofi-sofi/archivio-appunti"
 g = Github(GITHUB_TOKEN)
 repo = g.get_repo(NOME_REPOSITORY)
 
+# --- RECUPERO MATERIE ESISTENTI DA GITHUB IN TEMPO REALE ---
+materie_rilevate = []
+try:
+    # Controlliamo sia la cartella risultati che appunti per trovare tutte le materie create
+    for cartella_radice in ["risultati", "appunti"]:
+        try:
+            oggetti = repo.get_contents(cartella_radice, ref="main")
+            for obj in oggetti:
+                if obj.type == "dir" and obj.name not in materie_rilevate:
+                    materie_rilevate.append(obj.name)
+        except Exception:
+            pass
+except Exception:
+    pass
+
+# Se l'archivio è ancora vuoto su GitHub, usiamo quelle predefinite come base
+if len(materie_rilevate) == 0:
+    materie_rilevate = []
+else:
+    # Ordiniamo le materie alfabeticamente
+    materie_rilevate.sort()
+# -----------------------------------------------------------
+
 # Creazione dei tre Tab per l'iPad
 tab_carica, tab_archivio, tab_gestisci = st.tabs([
     "📥 Carica Nuovo Appunto", 
@@ -39,12 +62,12 @@ tab_carica, tab_archivio, tab_gestisci = st.tabs([
 with tab_carica:
     st.header("Carica un nuovo PDF")
     
-    materie_predefinite = []
-    opzioni = ["-- Seleziona una materia --", "➕ Aggiungi Nuova Materia..."] + materie_predefinite
+    # Il menu a tendina ora mostra dinamicamente anche "Italiano" o le altre materie vecchie
+    opzioni = ["-- Seleziona una materia --", "➕ Aggiungi Nuova Materia..."] + materie_rilevate
     scelta = st.selectbox("📚 Su quale materia stai lavorando?", opzioni, key="materia_carica")
 
     if scelta == "➕ Aggiungi Nuova Materia...":
-        materia_selezionata = st.text_input("✍️ Scrivi il nome della nuova materia:").strip()
+        materia_selezionata = st.text_input("✍️ Scrivi il nome della nuova materia (es. Storia, Economia):").strip()
     elif scelta == "-- Seleziona una materia --":
         materia_selezionata = ""
     else:
@@ -121,6 +144,7 @@ with tab_carica:
                         st.success("✅ Creato e salvato con successo su GitHub!")
 
                     st.balloons()
+                    st.rerun() # Riavvia per aggiornare immediatamente la lista materie
                 except Exception as e:
                     st.error(f"❌ Errore durante l'elaborazione: {e}")
 
@@ -160,7 +184,6 @@ with tab_archivio:
             
             st.write(f"✍️ Trovati {len(risultati_filtrati)} appunti")
             
-            # --- PEZZO CORRETTO SENZA WALRUS OPERATOR ---
             materie_visibili = set([f["materia"] for f in risultati_filtrati])
             materie_ordinate = sorted(list(materie_visibili))
             
@@ -205,10 +228,4 @@ with tab_gestisci:
                 with col_azione:
                     if st.button("Elimina ❌", key=f"del_{file_gh.path}"):
                         try:
-                            repo.delete_file(file_gh.path, f"Eliminato file: {file_gh.name}", file_gh.sha, branch="main")
-                            st.success(f"File {file_gh.name} eliminato!")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Impossibile eliminare: {e}")
-    except Exception:
-        st.info("L'archivio è vuoto. Carica prima un file!")
+                            repo.delete_file(file_gh
