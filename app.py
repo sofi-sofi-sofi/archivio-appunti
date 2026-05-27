@@ -35,7 +35,7 @@ tab_carica, tab_gestisci = st.tabs(["📥 Carica Nuovo Appunto", "🗑️ Gestis
 with tab_carica:
     st.header("Carica un nuovo PDF")
     
-    materie_predefinite = ["Matematica", "Fisica", "Chimica", "Informatica", "Biologia"]
+    materie_predefinite = []
     opzioni = ["-- Seleziona una materia --", "➕ Aggiungi Nuova Materia..."] + materie_predefinite
     scelta = st.selectbox("📚 Su quale materia stai lavorando?", opzioni, key="materia_carica")
 
