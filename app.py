@@ -228,4 +228,10 @@ with tab_gestisci:
                 with col_azione:
                     if st.button("Elimina ❌", key=f"del_{file_gh.path}"):
                         try:
-                            repo.delete_file(file_gh
+                            repo.delete_file(file_gh.path, f"Eliminato file: {file_gh.name}", file_gh.sha, branch="main")
+                            st.success(f"File {file_gh.name} eliminato!")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Impossibile eliminare: {e}")
+    except Exception:
+        st.info("L'archivio è vuoto. Carica prima un file!")
