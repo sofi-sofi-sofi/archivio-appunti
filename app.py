@@ -26,7 +26,7 @@ NOME_REPOSITORY = "sofi-sofi-sofi/archivio-appunti"
 # ====================================================================
 
 # --- GESTIONE MATERIE DINAMICA ---
-materie_predefinite = ["Matematica", "Fisica", "Chimica", "Informatica", "Biologia"]
+materie_predefinite = []
 
 # Creiamo il menu a tendina con l'opzione per aggiungere una nuova materia
 opzioni = ["-- Seleziona una materia --", "➕ Aggiungi Nuova Materia..."] + materie_predefinite
