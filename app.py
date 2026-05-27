@@ -14,138 +14,168 @@ st.set_page_config(
     layout="wide"
 )
 
-# 2. CSS Avanzato per sovrascrivere l'interfaccia nativa di Streamlit
+# 2. CSS Custom - TEMA CHIARO PREMIUM (Apple Minimal & Purple Accent)
 st.markdown("""
     <style>
-    /* Sfondo Nero Assoluto e font pulito */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
     
+    /* Sfondo Bianco / Grigio Chiarissimo e testo scuro */
     .stApp {
-        background-color: #000000 !important;
-        color: #ffffff !important;
-        font-family: 'Inter', sans-serif !important;
+        background-color: #f8f9fa !important;
+        color: #1a1a24 !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
     
-    /* Disattiva i sotto-testi nativi grigi di Streamlit che si vedono male */
-    .stWidget label p, .stMarkdown p, label, .stFileUploader label, [data-testid="stWidgetLabel"] {
-        color: #ffffff !important;
-        font-weight: 600 !important;
-        font-size: 1rem !important;
+    /* Blocco Titolo e Logo */
+    .brand-container {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 20px 0;
+        margin-bottom: 30px;
+    }
+    .logo-container {
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(138, 43, 226, 0.12);
+        border: 1px solid #e2d9f3;
+        background-color: #ffffff;
+        padding: 4px;
     }
     
-    /* Titoli */
+    /* Titoli Principali */
     h1 {
-        color: #ffffff !important;
-        font-weight: 800 !important;
-        letter-spacing: -0.05em;
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: #1a1a24 !important;
+        font-weight: 700 !important;
+        font-size: 2.8rem !important;
+        letter-spacing: -0.04em !important;
+        margin: 0 !important;
     }
     h2, h3, h4 {
-        color: #b3a4ff !important;
+        color: #4a148c !important;
         font-weight: 700 !important;
     }
     
-    /* MENU A TENDINA (Selectbox), INPUT DI TESTO E FILE UPLOADER */
-    /* Sovrascrive il contenitore nativo per farlo diventare nero con bordo viola */
-    div[data-baseweb="select"], .stTextInput>div>div>input, div[data-testid="stFileUploaderDropzone"] {
-        background-color: #0f0a21 !important;
-        border: 2px solid #321b63 !important;
-        border-radius: 12px !important;
-        color: #ffffff !important;
-        transition: all 0.25s ease-in-out;
+    /* Etichette dei campi di testo e moduli (Leggibilità Massima) */
+    .stWidget label p, label, [data-testid="stWidgetLabel"] p {
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: #2e1c6a !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+        letter-spacing: -0.01em;
+        margin-bottom: 8px !important;
     }
     
-    /* Forza il testo dentro i menu a tendina e gli input a essere bianco puro */
+    /* INTERFACCIA CAMPI DI INPUT (Fondo bianco, bordo grigio/viola) */
+    div[data-baseweb="select"], .stTextInput>div>div>input, div[data-testid="stFileUploaderDropzone"] {
+        background-color: #ffffff !important;
+        border: 2px solid #e1dbf0 !important;
+        border-radius: 16px !important;
+        color: #1a1a24 !important;
+        padding: 4px !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Testo dentro i menu a tendina e input */
     div[data-baseweb="select"] *, .stTextInput input {
-        color: #ffffff !important;
+        color: #1a1a24 !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-weight: 500 !important;
     }
     
-    /* Effetto Focus quando si tocca un elemento dall'iPad */
-    div[data-baseweb="select"]:focus-within, .stTextInput>div>div>input:focus, div[data-testid="stFileUploaderDropzone"]:hover {
-        border-color: #bf40bf !important;
-        box-shadow: 0 0 15px rgba(191, 64, 191, 0.25) !important;
+    /* Effetto Focus all'inserimento */
+    div[data-baseweb="select"]:focus-within, .stTextInput>div>div>input:focus {
+        border-color: #8a2be2 !important;
+        box-shadow: 0 0 20px rgba(138, 43, 226, 0.15) !important;
     }
     
-    /* Fix per i testi dentro l'uploader dei file */
+    /* Box di upload file */
+    div[data-testid="stFileUploaderDropzone"] {
+        padding: 30px !important;
+        border-style: dashed !important;
+        background-color: #f1ecf9 !important;
+        border-color: #c0b2df !important;
+    }
     div[data-testid="stFileUploaderDropzone"] [data-testid="stMarkdownContainer"] p {
-        color: #e3d9ff !important;
+        color: #4c3c75 !important;
     }
     
-    /* BARRA DEI TAB */
+    /* UTILITY BUTTONS (Sfumatura Viola/Fucsia del Logo) */
+    div.stButton > button:first-child {
+        font-family: 'Space Grotesk', sans-serif !important;
+        background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        padding: 16px 32px !important;
+        font-weight: 700 !important;
+        font-size: 1.1rem !important;
+        border-radius: 16px !important;
+        box-shadow: 0 6px 20px rgba(103, 58, 183, 0.25) !important;
+        width: 100%;
+        transition: all 0.2s ease;
+        letter-spacing: 0.02em;
+    }
+    div.stButton > button:first-child:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 10px 25px rgba(156, 39, 176, 0.4) !important;
+    }
+    
+    /* SELETTORE DEI TAB (Stile pulito iOS) */
     .stTabs [data-baseweb="tab-list"] {
-        background-color: #0d081c !important;
-        border: 1px solid #1f123a !important;
-        border-radius: 14px;
-        padding: 6px;
+        background-color: #ebe6f5 !important;
+        border: 1px solid #dcd5eb !important;
+        border-radius: 16px;
+        padding: 8px;
+        gap: 10px;
     }
     .stTabs [data-baseweb="tab"] {
-        color: #8f85b3 !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: #5c527a !important;
         font-weight: 600;
-        border-radius: 10px;
-        padding: 12px 24px;
+        border-radius: 12px;
+        padding: 12px 26px;
         background-color: transparent !important;
         border: none !important;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #5211a8 !important;
-        color: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #4a148c !important;
+        border: 1px solid #c0b2df !important;
         font-weight: 700 !important;
-        box-shadow: 0 4px 20px rgba(82, 17, 168, 0.4);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
     
-    /* PULSANTI (Bottoni di azione) */
-    div.stButton > button:first-child {
-        background: linear-gradient(135deg, #7916c2 0%, #3b0666 100%) !important;
-        color: #ffffff !important;
-        border: 1px solid #9933ff !important;
-        padding: 14px 32px !important;
-        font-weight: 700 !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 15px rgba(121, 22, 194, 0.3) !important;
-        width: 100%;
-        transition: all 0.2s ease;
-    }
-    div.stButton > button:first-child:hover {
-        background: linear-gradient(135deg, #9422eb 0%, #4f0b85 100%) !important;
-        border-color: #bd6eff !important;
-        box-shadow: 0 6px 25px rgba(148, 34, 235, 0.5) !important;
-    }
-    
-    /* CONTENITORI ARCHIVIO (Expander) */
+    /* CONTENITORI RISULTATI (Expander) */
     .streamlit-expanderHeader {
-        background-color: #0c081f !important;
-        border: 2px solid #231545 !important;
-        border-radius: 12px !important;
-        color: #ffffff !important;
-        font-size: 1.1rem !important;
+        background-color: #ffffff !important;
+        border: 1px solid #e1dbf0 !important;
+        border-radius: 14px !important;
+        color: #1a1a24 !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
     .streamlit-expanderContent {
-        background-color: #05030d !important;
-        border: 2px solid #231545 !important;
+        background-color: #ffffff !important;
+        border: 1px solid #e1dbf0 !important;
         border-top: none !important;
-        border-radius: 0 0 12px 12px !important;
-        padding: 20px !important;
+        border-radius: 0 0 14px 14px !important;
     }
     
-    /* Link intelligenti */
+    /* Link */
     a {
-        color: #b97eff !important;
-        text-decoration: none;
+        color: #7b1fa2 !important;
         font-weight: 600;
-    }
-    a:hover {
-        color: #ffffff !important;
-        text-decoration: underline;
     }
     
     /* Banner Scadenza */
     .stAlert {
-        background-color: #1a0813 !important;
-        border: 1px solid #59163b !important;
-        border-radius: 12px;
+        background-color: #fff3cd !important;
+        border: 1px solid #ffeeba !important;
+        border-radius: 14px;
     }
     .stAlert p {
-        color: #ff99d6 !important;
+        color: #856404 !important;
+        font-size: 0.95rem !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -158,21 +188,21 @@ NOME_REPOSITORY = "sofi-sofi-sofi/archivio-appunti"
 g = Github(GITHUB_TOKEN)
 repo = g.get_repo(NOME_REPOSITORY)
 
-# Banner Scadenza Token
+# Banner Scadenza
 st.warning("⚠️ **Scadenza Token AI:** Il sistema scadrà il **26/05/2027**.")
 
-# Header di Classe (Logo e Titolo affiancati)
-col_logo, col_titolo = st.columns([1, 7])
-with col_logo:
-    if os.path.exists("logo_matora.png"):
-        st.image("logo_matora.png", width=95)
-    else:
-        st.write("🔮") 
-with col_titolo:
-    st.markdown("<h1 style='margin-top: 5px; margin-bottom: 0px;'>Matora AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #8f85b3; margin-top: 0px;'>L'ecosistema intelligente per i tuoi appunti universitari</p>", unsafe_allow_html=True)
-
-st.write("")
+# Layout Header Integrato Light Mode
+st.markdown("""
+<div class="brand-container">
+    <div class="logo-container">
+        <img src="https://raw.githubusercontent.com/sofi-sofi-sofi/archivio-appunti/main/logo_matora.png" width="130" style="display:block; border-radius:24px;">
+    </div>
+    <div>
+        <h1>Matora AI</h1>
+        <p style="color: #5c527a; margin: 4px 0 0 0; font-size: 1.1rem; font-weight: 500;">L'ecosistema intelligente per i tuoi appunti universitari</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # --- RECUPERO MATERIE DA GITHUB ---
 materie_rilevate = []
@@ -189,11 +219,11 @@ except Exception:
     pass
 
 if len(materie_rilevate) == 0:
-    materie_rilevate = []
+    materie_rilevate = ["Matematica", "Fisica", "Chimica", "Informatica", "Biologia"]
 else:
     materie_rilevate.sort()
 
-# Navigazione principale a Tab
+# Navigazione Tab
 tab_carica, tab_archivio, tab_gestisci = st.tabs([
     "📥 Carica Nuovo Appunto", 
     "🔍 Cerca & Leggi Risultati", 
@@ -297,7 +327,7 @@ with tab_carica:
 # ====================================================================
 with tab_archivio:
     st.write("")
-    query_ricerca = st.text_input("Cerca per titolo o #ParolaChiave (es: #Elettronica):", "").strip().lower()
+    query_ricerca = st.text_input("Cerca per titolo o #ParolaChiave (es: #Diritto):", "").strip().lower()
     
     try:
         materie_folder = repo.get_contents("risultati", ref="main")
