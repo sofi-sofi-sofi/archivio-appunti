@@ -97,7 +97,7 @@ if file_caricato is not None and materia_selezionata != "":
                 # Chiamata a GPT-4o-mini
                 response = client.complete(
                     messages=[
-                        SystemMessage(content="Sei un assistente universitario che organizes e indicizza appunti."),
+                        SystemMessage(content="Sei un assistente universitario che organizza e indicizza appunti."),
                         UserMessage(content=contenuto_utente)
                     ],
                     model="gpt-4o-mini",
@@ -111,4 +111,27 @@ if file_caricato is not None and materia_selezionata != "":
 
                 # Definizione dei percorsi precisi basati sulla materia scelta o scritta dall'utente
                 path_appunto_pdf = f"appunti/{materia_selezionata}/{nome_base}.pdf"
-                path_risultato_md = f"risultati/{materia_selezion
+                path_risultato_md = f"risultati/{materia_selezionata}/{nome_base}.md"
+
+                # 1. Carica il PDF originale nella cartella appunti/Materia/
+                try:
+                    repo.create_file(path_appunto_pdf, f"Caricato PDF originale: {nome_base}", pdf_bytes, branch="main")
+                except Exception:
+                    st.info(f"Il PDF '{nome_base}.pdf' esiste già su GitHub, non è stato sovrascritto.")
+
+                # 2. Carica il file Markdown nella cartella risultati/Materia/
+                try:
+                    contents = repo.get_contents(path_risultato_md, ref="main")
+                    repo.update_file(contents.path, f"Aggiornato risultato AI: {nome_base}", risultato_ai, contents.sha, branch="main")
+                    st.success(f"✅ Aggiornato con successo in: {path_risultato_md}")
+                except Exception:
+                    repo.create_file(path_risultato_md, f"Creato risultato AI: {nome_base}", risultato_ai, branch="main")
+                    st.success(f"✅ Salvato con successo in: {path_risultato_md}")
+
+                st.balloons()
+
+            except Exception as e:
+                st.error(f"❌ Si è verificato un errore: {e}")
+else:
+    if scelta == "-- Seleziona una materia --" or materia_selezionata == "":
+        st.info("💡 Per procedere, seleziona una materia esistente o inseriscine una nuova dal menu in alto.")
