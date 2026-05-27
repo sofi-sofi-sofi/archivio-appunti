@@ -25,17 +25,29 @@ GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 NOME_REPOSITORY = "sofi-sofi-sofi/archivio-appunti"
 # ====================================================================
 
-# 1. Menu di selezione della materia (evita che l'AI o lo script sbaglino percorso)
-materie_disponibili = ["Matematica", "Fisica", "Chimica", "Informatica", "Biologia"]
-materia_selezionata = st.selectbox("📚 Seleziona la materia di questo appunto:", "% Seleziona una materia" if not st.session_state.get('materia') else materie_disponibili, index=0)
+# --- GESTIONE MATERIE DINAMICA ---
+materie_predefinite = ["Matematica", "Fisica", "Chimica", "Informatica", "Biologia"]
 
-# 2. Campo per caricare il file PDF (funziona perfettamente da iPad/File)
+# Creiamo il menu a tendina con l'opzione per aggiungere una nuova materia
+opzioni = ["-- Seleziona una materia --", "➕ Aggiungi Nuova Materia..."] + materie_predefinite
+scelta = st.selectbox("📚 Su quale materia stai lavorando?", opzioni)
+
+if scelta == "➕ Aggiungi Nuova Materia...":
+    materia_selezionata = st.text_input("✍️ Scrivi il nome della nuova materia (es. Storia, Economia):").strip()
+elif scelta == "-- Seleziona una materia --":
+    materia_selezionata = ""
+else:
+    materia_selezionata = scelta
+# ----------------------------------
+
+# Campo per caricare il file PDF (funziona perfettamente da iPad/File)
 file_caricato = st.file_uploader("📂 Scegli il file PDF dei tuoi appunti", type=["pdf"])
 
 # Nome personalizzato del file (facoltativo, prende il nome originale altrimenti)
 nome_personalizzato = st.text_input("✍️ Dai un nome al file (es: lezione_1)", "")
 
-if file_caricato is not None and materia_selezionata != "% Seleziona una materia":
+# Controllo validità: l'utente deve aver caricato un file e scelto/scritto una materia valida
+if file_caricato is not None and materia_selezionata != "":
     
     # Pulizia del nome del file
     if nome_personalizzato.strip() == "":
@@ -85,7 +97,7 @@ if file_caricato is not None and materia_selezionata != "% Seleziona una materia
                 # Chiamata a GPT-4o-mini
                 response = client.complete(
                     messages=[
-                        SystemMessage(content="Sei un assistente universitario che organizza e indicizza appunti."),
+                        SystemMessage(content="Sei un assistente universitario che organizes e indicizza appunti."),
                         UserMessage(content=contenuto_utente)
                     ],
                     model="gpt-4o-mini",
@@ -97,29 +109,6 @@ if file_caricato is not None and materia_selezionata != "% Seleziona una materia
                 g = Github(GITHUB_TOKEN)
                 repo = g.get_repo(NOME_REPOSITORY)
 
-                # Definizione dei percorsi precisi basati sulla materia scelta dall'utente
+                # Definizione dei percorsi precisi basati sulla materia scelta o scritta dall'utente
                 path_appunto_pdf = f"appunti/{materia_selezionata}/{nome_base}.pdf"
-                path_risultato_md = f"risultati/{materia_selezionata}/{nome_base}.md"
-
-                # 1. Carica il PDF originale nella cartella appunti/Materia/
-                try:
-                    repo.create_file(path_appunto_pdf, f"Caricato PDF originale: {nome_base}", pdf_bytes, branch="main")
-                except Exception:
-                    st.info(f"Il PDF '{nome_base}.pdf' esiste già su GitHub, non è stato sovrascritto.")
-
-                # 2. Carica il file Markdown nella cartella risultati/Materia/
-                try:
-                    contents = repo.get_contents(path_risultato_md, ref="main")
-                    repo.update_file(contents.path, f"Aggiornato risultato AI: {nome_base}", risultato_ai, contents.sha, branch="main")
-                    st.success(f"✅ Aggiornato con successo in: {path_risultato_md}")
-                except Exception:
-                    repo.create_file(path_risultato_md, f"Creato risultato AI: {nome_base}", risultato_ai, branch="main")
-                    st.success(f"✅ Salvato con successo in: {path_risultato_md}")
-
-                st.balloons()
-
-            except Exception as e:
-                st.error(f"❌ Si è verificato un errore: {e}")
-else:
-    if materia_selezionata == "% Seleziona una materia":
-        st.info("💡 Per procedere, seleziona prima la materia dal menu in alto.")
+                path_risultato_md = f"risultati/{materia_selezion
