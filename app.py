@@ -231,7 +231,7 @@ div[data-baseweb="popover"] li:hover {{ background-color:{BORDER}22 !important; 
     padding:20px 16px !important; width:100% !important; cursor:pointer !important;
 }}
 [data-testid="stFileUploaderDropzone"] button::before {{
-    content:"📁  [ Seleziona il file dal tuo iPad ]";
+    content:"📁  [ Seleziona il file ]";
     color:{UPL_TX}; font-size:0.9rem; font-weight:600;
 }}
 /* Nasconde label sopra il file uploader */
