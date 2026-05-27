@@ -139,7 +139,7 @@ with tab_archivio:
         for mat in elenco_materie:
             files_in_mat = repo.get_contents(f"risultati/{mat}", ref="main")
             for f in files_in_mat:
-                if f.name.endsWith(".md"):
+                if f.name.endswith(".md"):
                     tutti_i_file.append({"nome": f.name, "materia": mat, "download_url": f.download_url, "html_url": f.html_url})
         
         if len(tutti_i_file) == 0:
@@ -147,25 +147,24 @@ with tab_archivio:
         else:
             risultati_filtrati = []
             
-            # Mostriamo un caricamento solo se l'utente effettivamente cerca qualcosa
             with st.spinner("Ricerca in corso..."):
                 for f_info in tutti_i_file:
                     nome_pulito = f_info["nome"].replace(".md", "").replace("_", " ").lower()
                     
-                    # Se non c'è ricerca o se il nome corrisponde, lo aggiungiamo subito
                     if query_ricerca == "" or query_ricerca in nome_pulito:
                         risultati_filtrati.append(f_info)
                     else:
-                        # Altrimenti leggiamo dentro il testo del file per cercare i tag/parole chiave
                         res_cont = base64.b64decode(repo.get_contents(f"risultati/{f_info['materia']}/{f_info['nome']}", ref="main").content).decode("utf-8").lower()
                         if query_ricerca in res_cont:
                             risultati_filtrati.append(f_info)
             
             st.write(f"✍️ Trovati {len(risultati_filtrati)} appunti")
             
-            # Mostriamo i risultati divisi per materia
+            # --- PEZZO CORRETTO SENZA WALRUS OPERATOR ---
             materie_visibili = set([f["materia"] for f in risultati_filtrati])
-            for m in comedic_order := sorted(list(materie_visibili)):
+            materie_ordinate = sorted(list(materie_visibili))
+            
+            for m in materie_ordinate:
                 with st.expander(f"📚 {m}", expanded=True):
                     for f in risultati_filtrati:
                         if f["materia"] == m:
