@@ -7,15 +7,97 @@ from azure.core.credentials import AzureKeyCredential
 from github import Github
 import fitz  # PyMuPDF
 
-# Configurazione della pagina
-st.set_page_config(page_title="Matora AI - Plancia di Comando", page_icon="🧠", layout="wide")
+# 1. Configurazione della pagina con il brand Matora AI
+st.set_page_config(
+    page_title="Matora AI - Plancia di Comando", 
+    page_icon="logo_matora.png", 
+    layout="wide"
+)
 
-# Banner Arancione di avviso scadenza token
-st.warning("""
-⚠️ **Attenzione: Scadenza Token AI** Il token scadrà il **26/05/2027**. Dopo questa data l'applicazione smetterà di funzionare finché non verrà aggiornato il codice.
-""")
-
-st.title("🧠 Matora AI - Plancia di Comando")
+# 2. Palette di colori custom estratta dal tuo logo (Deep Violet, Cyan Neon, Lilac)
+st.markdown("""
+    <style>
+    /* Sfondo principale e testi */
+    .stApp {
+        background-color: #0b0816;
+        color: #e2e0ff;
+    }
+    
+    /* Titoli principali */
+    h1 {
+        color: #00f0ff !important;
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        text-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+    h2, h3, h4 {
+        color: #b7b3ff !important;
+    }
+    
+    /* Stile dei Tab */
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: #131026;
+        border-radius: 12px;
+        padding: 5px;
+        border-bottom: none;
+    }
+    .stTabs [data-baseweb="tab"] {
+        color: #9a95cc !important;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #00f0ff !important;
+        color: #0b0816 !important;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    }
+    
+    /* Bottoni */
+    div.stButton > button:first-child {
+        background: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
+        color: white !important;
+        border: none;
+        padding: 12px 24px;
+        font-weight: bold;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+    div.stButton > button:first-child:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 240, 255, 0.5);
+    }
+    
+    /* Scatole di input, selectbox e uploader */
+    .stTextInput>div>div>input, .stSelectbox>div>div, .stFileUploader>div>div {
+        background-color: #171430 !important;
+        border: 1px solid #312b5c !important;
+        color: #e2e0ff !important;
+        border-radius: 10px !important;
+    }
+    .stTextInput>div>div>input:focus {
+        border-color: #00f0ff !important;
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.3) !important;
+    }
+    
+    /* Expander dell'archivio risultati */
+    .streamlit-expanderHeader {
+        background-color: #171430 !important;
+        border: 1px solid #27224d !important;
+        border-radius: 10px !important;
+        color: #00f0ff !important;
+    }
+    
+    /* Banner di avviso temporaneo */
+    .stAlert {
+        background-color: #26121a !important;
+        border: 1px solid #ff4b4b !important;
+        color: #ffb3b3 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # ==================== CONFIGURAZIONE CREDENZIALI ====================
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
@@ -26,10 +108,25 @@ NOME_REPOSITORY = "sofi-sofi-sofi/archivio-appunti"
 g = Github(GITHUB_TOKEN)
 repo = g.get_repo(NOME_REPOSITORY)
 
-# --- RECUPERO MATERIE ESISTENTI DA GITHUB IN TEMPO REALE ---
+# Banner Scadenza Token coordinato cromaticamente
+st.warning("⚠️ **Attenzione: Scadenza Token AI** Il sistema scadrà il **26/05/2027**. Dopo questa data andrà rinnovato nei Secrets.")
+
+# 3. Header principale affiancando il tuo Logo e il Titolo Grande
+col_logo, col_titolo = st.columns([1, 6])
+with col_logo:
+    if os.path.exists("logo_matora.png"):
+        st.image("logo_matora.png", width=110)
+    else:
+        st.write("🔮") # Icona di riserva se l'immagine non è ancora caricata su GitHub
+with col_titolo:
+    st.markdown("<h1 style='margin-top: 10px;'>Matora AI</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #9a95cc;'>L'ecosistema intelligente per i tuoi appunti universitari dall'iPad</p>", unsafe_allow_html=True)
+
+st.write("")
+
+# --- RECUPERO MATERIE DA GITHUB ---
 materie_rilevate = []
 try:
-    # Controlliamo sia la cartella risultati che appunti per trovare tutte le materie create
     for cartella_radice in ["risultati", "appunti"]:
         try:
             oggetti = repo.get_contents(cartella_radice, ref="main")
@@ -41,15 +138,12 @@ try:
 except Exception:
     pass
 
-# Se l'archivio è ancora vuoto su GitHub, usiamo quelle predefinite come base
 if len(materie_rilevate) == 0:
-    materie_rilevate = []
+    materie_rilevate = ["Matematica", "Fisica", "Chimica", "Informatica", "Biologia"]
 else:
-    # Ordiniamo le materie alfabeticamente
     materie_rilevate.sort()
-# -----------------------------------------------------------
 
-# Creazione dei tre Tab per l'iPad
+# Creazione dei tre Tab coordinati
 tab_carica, tab_archivio, tab_gestisci = st.tabs([
     "📥 Carica Nuovo Appunto", 
     "🔍 Cerca & Leggi Risultati", 
@@ -60,20 +154,19 @@ tab_carica, tab_archivio, tab_gestisci = st.tabs([
 # TAB 1: CARICAMENTO & ELABORAZIONE
 # ====================================================================
 with tab_carica:
-    st.header("Carica un nuovo PDF")
+    st.markdown("### 📂 Invia un nuovo documento")
     
-    # Il menu a tendina ora mostra dinamicamente anche "Italiano" o le altre materie vecchie
     opzioni = ["-- Seleziona una materia --", "➕ Aggiungi Nuova Materia..."] + materie_rilevate
     scelta = st.selectbox("📚 Su quale materia stai lavorando?", opzioni, key="materia_carica")
 
     if scelta == "➕ Aggiungi Nuova Materia...":
-        materia_selezionata = st.text_input("✍️ Scrivi il nome della nuova materia (es. Storia, Economia):").strip()
+        materia_selezionata = st.text_input("✍️ Scrivi il nome della nuova materia (es. Italiano):").strip()
     elif scelta == "-- Seleziona una materia --":
         materia_selezionata = ""
     else:
         materia_selezionata = scelta
 
-    file_caricato = st.file_uploader("📂 Scegli il file PDF dei tuoi appunti", type=["pdf"])
+    file_caricato = st.file_uploader("📎 Trascina o seleziona il PDF dei tuoi appunti", type=["pdf"])
     nome_personalizzato = st.text_input("✍️ Dai un nome al file (es: lezione_1)", "")
 
     if file_caricato is not None and materia_selezionata != "":
@@ -83,7 +176,7 @@ with tab_carica:
             nome_base = nome_personalizzato.strip().replace(" ", "_")
             
         if st.button("🚀 Avvia Elaborazione AI e Salva", type="primary"):
-            with st.spinner("⏳ Elaborazione in corso... Lettura PDF e analisi AI..."):
+            with st.spinner("⏳ Matora AI sta analizzando la tua grafia..."):
                 try:
                     pdf_bytes = file_caricato.read()
                     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
@@ -144,7 +237,7 @@ with tab_carica:
                         st.success("✅ Creato e salvato con successo su GitHub!")
 
                     st.balloons()
-                    st.rerun() # Riavvia per aggiornare immediatamente la lista materie
+                    st.rerun()
                 except Exception as e:
                     st.error(f"❌ Errore durante l'elaborazione: {e}")
 
@@ -152,8 +245,8 @@ with tab_carica:
 # TAB 2: RICERCA AVANZATA & LETTURA RISULTATI
 # ====================================================================
 with tab_archivio:
-    st.header("🔍 Cerca tra i tuoi risultati AI")
-    query_ricerca = st.text_input("Filtra per titolo o #ParolaChiave (es: #Fisica):", "").strip().lower()
+    st.markdown("### 🔍 Motore di ricerca intelligente")
+    query_ricerca = st.text_input("Filtra istantaneamente per titolo o #ParolaChiave:", "").strip().lower()
     
     try:
         materie_folder = repo.get_contents("risultati", ref="main")
@@ -167,11 +260,11 @@ with tab_archivio:
                     tutti_i_file.append({"nome": f.name, "materia": mat, "download_url": f.download_url, "html_url": f.html_url})
         
         if len(tutti_i_file) == 0:
-            st.info("L'archivio è ancora vuoto. Carica il tuo primo appunto!")
+            st.info("L'archivio è vuoto. Effettua il tuo primo caricamento!")
         else:
             risultati_filtrati = []
             
-            with st.spinner("Ricerca in corso..."):
+            with st.spinner("Scansione archivio cloud..."):
                 for f_info in tutti_i_file:
                     nome_pulito = f_info["nome"].replace(".md", "").replace("_", " ").lower()
                     
@@ -182,20 +275,20 @@ with tab_archivio:
                         if query_ricerca in res_cont:
                             risultati_filtrati.append(f_info)
             
-            st.write(f"✍️ Trovati {len(risultati_filtrati)} appunti")
+            st.markdown(f"🧬 *Trovati {len(risultati_filtrati)} elementi corrispondenti*")
             
             materie_visibili = set([f["materia"] for f in risultati_filtrati])
             materie_ordinate = sorted(list(materie_visibili))
             
             for m in materie_ordinate:
-                with st.expander(f"📚 {m}", expanded=True):
+                with st.expander(f"📚 {m.upper()}", expanded=True):
                     for f in risultati_filtrati:
                         if f["materia"] == m:
                             col_t, col_b = st.columns([4, 1])
                             with col_t:
-                                st.write(f"📄 **{f['nome'].replace('.md','').replace('_',' ')}**")
+                                st.markdown(f"▪️ **{f['nome'].replace('.md','').replace('_',' ')}**")
                             with col_b:
-                                st.markdown(f"[👁️ Leggi su GitHub]({f['html_url']})")
+                                st.markdown(f"[👁️ Apri Riassunto]({f['html_url']})")
                                 
     except Exception:
         st.info("Nessun riassunto trovato nell'archivio cloud.")
@@ -204,10 +297,10 @@ with tab_archivio:
 # TAB 3: GESTIONE ED ELIMINAZIONE FILE
 # ====================================================================
 with tab_gestisci:
-    st.header("🗑️ Elimina file dall'archivio")
-    st.write("Rimuovi definitivamente i file sia dai PDF originali che dai risultati generati dall'AI.")
+    st.markdown("### 🗑️ Manutenzione e pulizia database")
+    st.write("Scegli un file per rimuoverlo in modo permanente dal cloud.")
 
-    tipo_cartella = st.radio("Scegli cosa vuoi controllare:", ["Risultati AI (.md)", "PDF Originali (.pdf)"])
+    tipo_cartella = st.radio("Seleziona categoria:", ["Risultati AI (.md)", "PDF Originali (.pdf)"])
     cartella_target = "risultati" if tipo_cartella == "Risultati AI (.md)" else "appunti"
 
     try:
@@ -229,9 +322,9 @@ with tab_gestisci:
                     if st.button("Elimina ❌", key=f"del_{file_gh.path}"):
                         try:
                             repo.delete_file(file_gh.path, f"Eliminato file: {file_gh.name}", file_gh.sha, branch="main")
-                            st.success(f"File {file_gh.name} eliminato!")
+                            st.success(f"File {file_gh.name} rimosso!")
                             st.rerun()
                         except Exception as e:
-                            st.error(f"Impossibile eliminare: {e}")
+                            st.error(f"Errore di eliminazione: {e}")
     except Exception:
-        st.info("L'archivio è vuoto. Carica prima un file!")
+        st.info("L'archivio è vuoto.")
