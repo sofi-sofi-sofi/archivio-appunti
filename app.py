@@ -8,14 +8,14 @@ from github import Github
 import fitz  # PyMuPDF
 
 # Configurazione della pagina
-st.set_page_config(page_title="Matora 1.0 - Gestione Appunti", page_icon="📄", layout="wide")
+st.set_page_config(page_title="Matora AI - Plancia di Comando", page_icon="🧠", layout="wide")
 
 # Banner Arancione di avviso scadenza token
 st.warning("""
 ⚠️ **Attenzione: Scadenza Token AI** Il token scadrà il **26/05/2027**. Dopo questa data l'applicazione smetterà di funzionare finché non verrà aggiornato il codice.
 """)
 
-st.title("🧠 Matora AI - Hub di Elaborazione & Gestione Archivio")
+st.title("🧠 Matora AI - Plancia di Comando")
 
 # ==================== CONFIGURAZIONE CREDENZIALI ====================
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
@@ -26,8 +26,12 @@ NOME_REPOSITORY = "sofi-sofi-sofi/archivio-appunti"
 g = Github(GITHUB_TOKEN)
 repo = g.get_repo(NOME_REPOSITORY)
 
-# Creazione dei Tab: uno per caricare e uno per gestire/eliminare
-tab_carica, tab_gestisci = st.tabs(["📥 Carica Nuovo Appunto", "🗑️ Gestisci ed Elimina File"])
+# Creazione dei tre Tab per l'iPad
+tab_carica, tab_archivio, tab_gestisci = st.tabs([
+    "📥 Carica Nuovo Appunto", 
+    "🔍 Cerca & Leggi Risultati", 
+    "🗑️ Elimina File"
+])
 
 # ====================================================================
 # TAB 1: CARICAMENTO & ELABORAZIONE
@@ -80,7 +84,7 @@ with tab_carica:
                     1. **RIASSUNTO**: Fai un riassunto dettagliato ma discorsivo dei concetti principali spiegati nel testo.
                     2. **SCHEMA**: Crea uno schema puntato, gerarchico e super chiaro della lezione.
                     3. **QUIZ**: Genera 3 domande a scelta multipla basate su questo appunto (con le soluzioni indicate alla fine).
-                    4. **PAROLE CHIAVE**: Estrai una lista di parole chiave separate da virgola.
+                    4. **PAROLE CHIAVE**: Estrai una lista di parole chiave separate da virgola (es: #Meccanica, #Equazioni).
                     """
 
                     contenuto_utente = [{"type": "text", "text": prompt}]
@@ -106,59 +110,106 @@ with tab_carica:
                     try:
                         repo.create_file(path_appunto_pdf, f"Caricato PDF: {nome_base}", pdf_bytes, branch="main")
                     except Exception:
-                        st.info(f"Il PDF '{nome_base}.pdf' esiste già su GitHub.")
+                        st.info(f"Il PDF '{nome_base}.pdf' esiste già.")
 
                     try:
                         contents = repo.get_contents(path_risultato_md, ref="main")
-                        repo.update_file(contents.path, f"Aggiornato risultato AI: {nome_base}", risultato_ai, contents.sha, branch="main")
-                        st.success("✅ Aggiornato con successo!")
+                        repo.update_file(contents.path, f"Aggiornato: {nome_base}", risultato_ai, contents.sha, branch="main")
+                        st.success("✅ Aggiornato con successo su GitHub!")
                     except Exception:
-                        repo.create_file(path_risultato_md, f"Creato risultato AI: {nome_base}", risultato_ai, branch="main")
-                        st.success("✅ Salvato con successo!")
+                        repo.create_file(path_risultato_md, f"Creato: {nome_base}", risultato_ai, branch="main")
+                        st.success("✅ Creato e salvato con successo su GitHub!")
 
                     st.balloons()
                 except Exception as e:
-                    st.error(f"❌ Errore: {e}")
+                    st.error(f"❌ Errore durante l'elaborazione: {e}")
 
 # ====================================================================
-# TAB 2: GESTIONE ED ELIMINAZIONE FILE
+# TAB 2: RICERCA AVANZATA & LETTURA RISULTATI
+# ====================================================================
+with tab_archivio:
+    st.header("🔍 Cerca tra i tuoi risultati AI")
+    query_ricerca = st.text_input("Filtra per titolo o #ParolaChiave (es: #Fisica):", "").strip().lower()
+    
+    try:
+        materie_folder = repo.get_contents("risultati", ref="main")
+        elenco_materie = [f.name for f in materie_folder if f.type == "dir"]
+        
+        tutti_i_file = []
+        for mat in elenco_materie:
+            files_in_mat = repo.get_contents(f"risultati/{mat}", ref="main")
+            for f in files_in_mat:
+                if f.name.endsWith(".md"):
+                    tutti_i_file.append({"nome": f.name, "materia": mat, "download_url": f.download_url, "html_url": f.html_url})
+        
+        if len(tutti_i_file) == 0:
+            st.info("L'archivio è ancora vuoto. Carica il tuo primo appunto!")
+        else:
+            risultati_filtrati = []
+            
+            # Mostriamo un caricamento solo se l'utente effettivamente cerca qualcosa
+            with st.spinner("Ricerca in corso..."):
+                for f_info in tutti_i_file:
+                    nome_pulito = f_info["nome"].replace(".md", "").replace("_", " ").lower()
+                    
+                    # Se non c'è ricerca o se il nome corrisponde, lo aggiungiamo subito
+                    if query_ricerca == "" or query_ricerca in nome_pulito:
+                        risultati_filtrati.append(f_info)
+                    else:
+                        # Altrimenti leggiamo dentro il testo del file per cercare i tag/parole chiave
+                        res_cont = base64.b64decode(repo.get_contents(f"risultati/{f_info['materia']}/{f_info['nome']}", ref="main").content).decode("utf-8").lower()
+                        if query_ricerca in res_cont:
+                            risultati_filtrati.append(f_info)
+            
+            st.write(f"✍️ Trovati {len(risultati_filtrati)} appunti")
+            
+            # Mostriamo i risultati divisi per materia
+            materie_visibili = set([f["materia"] for f in risultati_filtrati])
+            for m in comedic_order := sorted(list(materie_visibili)):
+                with st.expander(f"📚 {m}", expanded=True):
+                    for f in risultati_filtrati:
+                        if f["materia"] == m:
+                            col_t, col_b = st.columns([4, 1])
+                            with col_t:
+                                st.write(f"📄 **{f['nome'].replace('.md','').replace('_',' ')}**")
+                            with col_b:
+                                st.markdown(f"[👁️ Leggi su GitHub]({f['html_url']})")
+                                
+    except Exception:
+        st.info("Nessun riassunto trovato nell'archivio cloud.")
+
+# ====================================================================
+# TAB 3: GESTIONE ED ELIMINAZIONE FILE
 # ====================================================================
 with tab_gestisci:
     st.header("🗑️ Elimina file dall'archivio")
-    st.write("Seleziona una cartella per vedere i file e rimuoverli definitivamente sia dai PDF che dai risultati AI.")
+    st.write("Rimuovi definitivamente i file sia dai PDF originali che dai risultati generati dall'AI.")
 
     tipo_cartella = st.radio("Scegli cosa vuoi controllare:", ["Risultati AI (.md)", "PDF Originali (.pdf)"])
     cartella_target = "risultati" if tipo_cartella == "Risultati AI (.md)" else "appunti"
 
     try:
-        # Recupera le materie esistenti su GitHub
         materie_folder = repo.get_contents(cartella_target, ref="main")
         elenco_materie = [f.name for f in materie_folder if f.type == "dir"]
         
         if len(elenco_materie) == 0:
             st.info("Nessuna cartella materia trovata.")
         else:
-            materia_scelta = st.selectbox("Seleziona la materia da ripulire:", elenco_materie)
-            
-            # Recupera i file dentro la materia selezionata
+            materia_scelta = st.selectbox("Seleziona la materia da modificare:", elenco_materie, key="materia_del")
             files_in_folder = repo.get_contents(f"{cartella_target}/{materia_scelta}", ref="main")
             
             st.write("---")
             for file_gh in files_in_folder:
                 col_nome, col_azione = st.columns([4, 1])
-                
                 with col_nome:
                     st.text(f"📄 {file_gh.name}")
-                
                 with col_azione:
-                    # Bottone di eliminazione con chiave unica per ogni file
                     if st.button("Elimina ❌", key=f"del_{file_gh.path}"):
                         try:
                             repo.delete_file(file_gh.path, f"Eliminato file: {file_gh.name}", file_gh.sha, branch="main")
-                            st.success(f"File {file_gh.name} eliminato! Ricarica la pagina.")
+                            st.success(f"File {file_gh.name} eliminato!")
                             st.rerun()
                         except Exception as e:
                             st.error(f"Impossibile eliminare: {e}")
-                            
     except Exception:
-        st.info("L'archivio è vuoto. Carica prima un file per vedere comparire lo strumento di eliminazione.")
+        st.info("L'archivio è vuoto. Carica prima un file!")
