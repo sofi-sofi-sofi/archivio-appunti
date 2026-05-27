@@ -7,404 +7,278 @@ from azure.core.credentials import AzureKeyCredential
 from github import Github
 import fitz  # PyMuPDF
 
-# 1. Configurazione della pagina
-st.set_page_config(
-    page_title="Matora AI", 
-    page_icon="logo_matora.png", 
-    layout="wide"
-)
+# ==========================================
+# 1. SETUP INIZIALE & STATO DEL TEMA
+# ==========================================
+st.set_page_config(page_title="Matora AI", page_icon="logo_matora.png", layout="wide")
 
-# 2. CSS Custom - TEMA CHIARO PREMIUM (Apple Minimal & Purple Accent)
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
-    
-    /* Sfondo Bianco / Grigio Chiarissimo e testo scuro */
-    .stApp {
-        background-color: #f8f9fa !important;
-        color: #1a1a24 !important;
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-    }
-    
-    /* Blocco Titolo e Logo */
-    .brand-container {
-        display: flex;
-        align-items: center;
-        gap: 24px;
-        padding: 20px 0;
-        margin-bottom: 30px;
-    }
-    .logo-container {
-        border-radius: 24px;
-        box-shadow: 0 10px 30px rgba(138, 43, 226, 0.12);
-        border: 1px solid #e2d9f3;
-        background-color: #ffffff;
-        padding: 4px;
-    }
-    
-    /* Titoli Principali */
-    h1 {
-        font-family: 'Space Grotesk', sans-serif !important;
-        color: #1a1a24 !important;
-        font-weight: 700 !important;
-        font-size: 2.8rem !important;
-        letter-spacing: -0.04em !important;
-        margin: 0 !important;
-    }
-    h2, h3, h4 {
-        color: #4a148c !important;
-        font-weight: 700 !important;
-    }
-    
-    /* Etichette dei campi di testo e moduli (Leggibilità Massima) */
-    .stWidget label p, label, [data-testid="stWidgetLabel"] p {
-        font-family: 'Space Grotesk', sans-serif !important;
-        color: #2e1c6a !important;
-        font-weight: 600 !important;
-        font-size: 1.05rem !important;
-        letter-spacing: -0.01em;
-        margin-bottom: 8px !important;
-    }
-    
-    /* INTERFACCIA CAMPI DI INPUT (Fondo bianco, bordo grigio/viola) */
-    div[data-baseweb="select"], .stTextInput>div>div>input, div[data-testid="stFileUploaderDropzone"] {
-        background-color: #ffffff !important;
-        border: 2px solid #e1dbf0 !important;
-        border-radius: 16px !important;
-        color: #1a1a24 !important;
-        padding: 4px !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    /* Testo dentro i menu a tendina e input */
-    div[data-baseweb="select"] *, .stTextInput input {
-        color: #1a1a24 !important;
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-weight: 500 !important;
-    }
-    
-    /* Effetto Focus all'inserimento */
-    div[data-baseweb="select"]:focus-within, .stTextInput>div>div>input:focus {
-        border-color: #8a2be2 !important;
-        box-shadow: 0 0 20px rgba(138, 43, 226, 0.15) !important;
-    }
-    
-    /* Box di upload file */
-    div[data-testid="stFileUploaderDropzone"] {
-        padding: 30px !important;
-        border-style: dashed !important;
-        background-color: #f1ecf9 !important;
-        border-color: #c0b2df !important;
-    }
-    div[data-testid="stFileUploaderDropzone"] [data-testid="stMarkdownContainer"] p {
-        color: #4c3c75 !important;
-    }
-    
-    /* UTILITY BUTTONS (Sfumatura Viola/Fucsia del Logo) */
-    div.stButton > button:first-child {
-        font-family: 'Space Grotesk', sans-serif !important;
-        background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%) !important;
-        color: #ffffff !important;
-        border: none !important;
-        padding: 16px 32px !important;
-        font-weight: 700 !important;
-        font-size: 1.1rem !important;
-        border-radius: 16px !important;
-        box-shadow: 0 6px 20px rgba(103, 58, 183, 0.25) !important;
-        width: 100%;
-        transition: all 0.2s ease;
-        letter-spacing: 0.02em;
-    }
-    div.stButton > button:first-child:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 10px 25px rgba(156, 39, 176, 0.4) !important;
-    }
-    
-    /* SELETTORE DEI TAB (Stile pulito iOS) */
-    .stTabs [data-baseweb="tab-list"] {
-        background-color: #ebe6f5 !important;
-        border: 1px solid #dcd5eb !important;
-        border-radius: 16px;
-        padding: 8px;
-        gap: 10px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        font-family: 'Space Grotesk', sans-serif !important;
-        color: #5c527a !important;
-        font-weight: 600;
-        border-radius: 12px;
-        padding: 12px 26px;
-        background-color: transparent !important;
-        border: none !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #ffffff !important;
-        color: #4a148c !important;
-        border: 1px solid #c0b2df !important;
-        font-weight: 700 !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-    
-    /* CONTENITORI RISULTATI (Expander) */
-    .streamlit-expanderHeader {
-        background-color: #ffffff !important;
-        border: 1px solid #e1dbf0 !important;
-        border-radius: 14px !important;
-        color: #1a1a24 !important;
-        font-family: 'Space Grotesk', sans-serif !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-    }
-    .streamlit-expanderContent {
-        background-color: #ffffff !important;
-        border: 1px solid #e1dbf0 !important;
-        border-top: none !important;
-        border-radius: 0 0 14px 14px !important;
-    }
-    
-    /* Link */
-    a {
-        color: #7b1fa2 !important;
-        font-weight: 600;
-    }
-    
-    /* Banner Scadenza */
-    .stAlert {
-        background-color: #fff3cd !important;
-        border: 1px solid #ffeeba !important;
-        border-radius: 14px;
-    }
-    .stAlert p {
-        color: #856404 !important;
-        font-size: 0.95rem !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
+if "tema_scuro" not in st.session_state:
+    st.session_state.tema_scuro = False
 
-# ==================== CONFIGURAZIONE CREDENZIALI ====================
+# Credenziali (assicurati di averle nei secrets)
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 NOME_REPOSITORY = "sofi-sofi-sofi/archivio-appunti"
-# ====================================================================
-
 g = Github(GITHUB_TOKEN)
 repo = g.get_repo(NOME_REPOSITORY)
 
-# Banner Scadenza
-st.warning("⚠️ **Scadenza Token AI:** Il sistema scadrà il **26/05/2027**.")
+# ==========================================
+# 2. MOTORE CSS DINAMICO (LIGHT / DARK MODE)
+# ==========================================
+if st.session_state.tema_scuro:
+    # --- VARIABILI TEMA SCURO (Ispirato al Logo) ---
+    css_vars = """
+    :root {
+        --bg-app: #08050e;
+        --text-main: #ffffff;
+        --text-sec: #a39eb8;
+        --card-bg: #120c21;
+        --card-border: #a333ff;
+        --neon-glow: rgba(163, 51, 255, 0.35);
+        --input-bg: #1b1330;
+        --input-border: #3d2b63;
+        --btn-grad: linear-gradient(90deg, #9b2de0, #5c16c5);
+        --item-bg: #1c142e;
+    }
+    """
+else:
+    # --- VARIABILI TEMA CHIARO (Ispirato al Mockup) ---
+    css_vars = """
+    :root {
+        --bg-app: #f4f6f9;
+        --text-main: #1a1a24;
+        --text-sec: #5c527a;
+        --card-bg: #ffffff;
+        --card-border: #ff33cc;
+        --neon-glow: rgba(255, 51, 204, 0.25);
+        --input-bg: #f9f9fc;
+        --input-border: #e2d9f3;
+        --btn-grad: linear-gradient(90deg, #ff007f, #8a2be2);
+        --item-bg: #ffffff;
+    }
+    """
 
-# Layout Header Integrato Light Mode
+# Iniezione dello stile
+st.markdown(f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+    
+    {css_vars}
+
+    /* Reset Sfondo App */
+    .stApp {{ background-color: var(--bg-app) !important; color: var(--text-main) !important; font-family: 'Plus Jakarta Sans', sans-serif !important; transition: background 0.4s ease; }}
+    
+    /* Top Bar & Titoli */
+    h1, h2, h3, p {{ color: var(--text-main) !important; }}
+    .title-glow {{ font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 2.2rem; background: var(--btn-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0; }}
+    
+    /* Navbar Decorativa (Pillole Mockup) */
+    .nav-pill-container {{ display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }}
+    .nav-pill {{ background-color: var(--card-bg); border: 2px solid var(--card-border); border-radius: 30px; padding: 10px 24px; font-weight: 700; font-size: 0.9rem; color: var(--text-main); box-shadow: 0 0 15px var(--neon-glow); letter-spacing: 1px; }}
+
+    /* STILE DEI 3 PANNELLI PRINCIPALI (Bordi Neon) */
+    [data-testid="stVerticalBlockBorderWrapper"] {{
+        background-color: var(--card-bg) !important;
+        border: 2px solid var(--card-border) !important;
+        border-radius: 20px !important;
+        padding: 15px !important;
+        box-shadow: 0 0 25px var(--neon-glow) !important;
+        transition: all 0.3s ease;
+    }}
+    
+    /* Input, Select, Uploader */
+    .stTextInput input, div[data-baseweb="select"] {{ background-color: var(--input-bg) !important; border: 1px solid var(--input-border) !important; color: var(--text-main) !important; border-radius: 12px !important; }}
+    div[data-testid="stFileUploaderDropzone"] {{ background-color: var(--input-bg) !important; border: 2px dashed var(--card-border) !important; border-radius: 16px !important; padding: 20px !important; }}
+    
+    /* Pulsante Primario */
+    div.stButton > button[kind="primary"] {{
+        background: var(--btn-grad) !important; color: white !important; font-weight: 800 !important; border-radius: 12px !important; border: none !important; width: 100%; padding: 12px !important; box-shadow: 0 4px 15px var(--neon-glow) !important;
+    }}
+
+    /* Pulsante Elimina (Piccolo e scuro) */
+    div.stButton > button[kind="secondary"] {{ background-color: #2b1a4a !important; color: white !important; border: none !important; border-radius: 8px !important; font-size: 0.8rem !important; padding: 4px 12px !important; }}
+    
+    /* Griglia Elementi (File Cards) */
+    .file-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; margin-top: 15px; }}
+    .file-card {{
+        background-color: var(--item-bg); border: 1px solid var(--input-border); border-radius: 12px; padding: 15px 10px; text-align: center; text-decoration: none; color: var(--text-main); display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s;
+    }}
+    .file-card:hover {{ transform: translateY(-3px); border-color: var(--card-border); box-shadow: 0 6px 15px var(--neon-glow); }}
+    .file-icon {{ font-size: 1.8rem; color: #ff007f; }}
+    .file-title {{ font-size: 0.85rem; font-weight: 600; line-height: 1.2; word-break: break-word; }}
+    
+    /* Nascondi il bordo nativo dei blocchi interni se esistono */
+    [data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlockBorderWrapper"] {{ border: none !important; box-shadow: none !important; padding: 0 !important; }}
+    </style>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# 3. HEADER & TOP BAR
+# ==========================================
+col_logo, col_titolo, col_toggle = st.columns([1, 6, 2])
+with col_logo:
+    st.image("https://raw.githubusercontent.com/sofi-sofi-sofi/archivio-appunti/main/logo_matora.png", width=70)
+with col_titolo:
+    st.markdown('<p class="title-glow">MATORA AI</p><p style="margin:0; font-size:0.9rem; font-weight:500;">L\'ecosistema intelligente per i tuoi appunti universitari</p>', unsafe_allow_html=True)
+with col_toggle:
+    st.write("")
+    # Il Toggle ricarica la pagina e applica il tema scuro o chiaro
+    if st.toggle("🌙 Tema Scuro", value=st.session_state.tema_scuro):
+        st.session_state.tema_scuro = True
+    else:
+        st.session_state.tema_scuro = False
+
+# Navbar Decorativa centrale (come da Mockup)
 st.markdown("""
-<div class="brand-container">
-    <div class="logo-container">
-        <img src="https://raw.githubusercontent.com/sofi-sofi-sofi/archivio-appunti/main/logo_matora.png" width="130" style="display:block; border-radius:24px;">
-    </div>
-    <div>
-        <h1>Matora AI</h1>
-        <p style="color: #5c527a; margin: 4px 0 0 0; font-size: 1.1rem; font-weight: 500;">L'ecosistema intelligente per i tuoi appunti universitari</p>
-    </div>
+<div class="nav-pill-container">
+    <div class="nav-pill">📥 INVIA APPUNTI</div>
+    <div class="nav-pill">🔍 CERCA NELL'ARCHIVIO</div>
+    <div class="nav-pill">🗑️ MANUTENZIONE</div>
 </div>
 """, unsafe_allow_html=True)
 
-# --- RECUPERO MATERIE DA GITHUB ---
+st.warning("⚠️ Scadenza Token AI: 26/05/2027", icon="⏳")
+
+# ==========================================
+# RECUPERO DATI GITHUB
+# ==========================================
 materie_rilevate = []
 try:
-    for cartella_radice in ["risultati", "appunti"]:
+    for folder in ["risultati", "appunti"]:
         try:
-            oggetti = repo.get_contents(cartella_radice, ref="main")
-            for obj in oggetti:
+            for obj in repo.get_contents(folder, ref="main"):
                 if obj.type == "dir" and obj.name not in materie_rilevate:
                     materie_rilevate.append(obj.name)
-        except Exception:
-            pass
-except Exception:
-    pass
+        except: pass
+except: pass
+materie_rilevate.sort()
 
-if len(materie_rilevate) == 0:
-    materie_rilevate = ["Matematica", "Fisica", "Chimica", "Informatica", "Biologia"]
-else:
-    materie_rilevate.sort()
 
-# Navigazione Tab
-tab_carica, tab_archivio, tab_gestisci = st.tabs([
-    "📥 Carica Nuovo Appunto", 
-    "🔍 Cerca & Leggi Risultati", 
-    "🗑️ Elimina File"
-])
+# ==========================================
+# 4. DASHBOARD A 3 COLONNE (Il cuore del Mockup)
+# ==========================================
+# Proporzioni per replicare l'immagine: Input(più stretto), Centro(Largo), Destra(Medio)
+col_invia, col_cerca, col_gestisci = st.columns([1.2, 1.8, 1.2], gap="large")
 
-# ====================================================================
-# TAB 1: CARICAMENTO & ELABORAZIONE
-# ====================================================================
-with tab_carica:
-    st.write("")
-    
-    opzioni = ["-- Seleziona una materia --", "➕ Aggiungi Nuova Materia..."] + materie_rilevate
-    scelta = st.selectbox("Su quale materia stai lavorando?", opzioni, key="materia_carica")
-
-    if scelta == "➕ Aggiungi Nuova Materia...":
-        materia_selezionata = st.text_input("Scrivi il nome della nuova materia:").strip()
-    elif scelta == "-- Seleziona una materia --":
+# ----------------- PANNELLO 1: INVIA -----------------
+with col_invia:
+    with st.container(border=True):
+        st.markdown("### Invia Appunti")
+        
+        opzioni = ["-- Seleziona --", "➕ Nuova Materia..."] + materie_rilevate
+        scelta = st.selectbox("Su quale materia stai lavorando?", opzioni)
+        
         materia_selezionata = ""
-    else:
-        materia_selezionata = scelta
+        if scelta == "➕ Nuova Materia...":
+            materia_selezionata = st.text_input("Nome nuova materia:")
+        elif scelta != "-- Seleziona --":
+            materia_selezionata = scelta
 
-    file_caricato = st.file_uploader("Trascina o seleziona il PDF dei tuoi appunti", type=["pdf"])
-    nome_personalizzato = st.text_input("Dai un nome al file (es: lezione_1)", "")
+        st.markdown("#### PDF Upload")
+        file_caricato = st.file_uploader("Trascina o seleziona il PDF", type=["pdf"])
+        nome_pers = st.text_input("Nome file (opzionale):")
 
-    if file_caricato is not None and materia_selezionata != "":
-        if nome_personalizzato.strip() == "":
-            nome_base = os.path.splitext(file_caricato.name)[0]
-        else:
-            nome_base = nome_personalizzato.strip().replace(" ", "_")
-            
-        st.write("")
-        if st.button("🚀 Avvia Elaborazione AI e Salva", type="primary"):
-            with st.spinner("⏳ Matora AI sta analizzando la tua grafia..."):
-                try:
-                    pdf_bytes = file_caricato.read()
-                    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-                    immagini_pagine = []
-
-                    for numero_pagina in range(len(doc)):
-                        pagina = doc.load_page(numero_pagina)
-                        pix = pagina.get_pixmap(matrix=fitz.Matrix(2, 2))
-                        img_bytes = pix.tobytes("png")
-                        base64_image = base64.b64encode(img_bytes).decode('utf-8')
-                        immagini_pagine.append(base64_image)
-
-                    client = ChatCompletionsClient(
-                        endpoint="https://models.inference.ai.azure.com",
-                        credential=AzureKeyCredential(GITHUB_TOKEN)
-                    )
-
-                    prompt = """
-                    Analizza questo documento che contiene i miei appunti presi a mano su iPad.
-                    Esegui i seguenti compiti in lingua italiana e formatta la risposta rigorosamente in formato Markdown:
-                    1. **RIASSUNTO**: Fai un riassunto dettagliato ma discorsivo dei concetti principali spiegati nel testo.
-                    2. **SCHEMA**: Crea uno schema puntato, gerarchico e super chiaro della lezione.
-                    3. **QUIZ**: Genera 3 domande a scelta multipla basate su questo appunto (con le soluzioni indicate alla fine).
-                    4. **PAROLE CHIAVE**: Estrai una lista di parole chiave separate da virgola (es: #Meccanica, #Equazioni).
-                    """
-
-                    contenuto_utente = [{"type": "text", "text": prompt}]
-                    for img_b64 in immagini_pagine:
-                        contenuto_utente.append({
-                            "type": "image_url",
-                            "image_url": {"url": f"data:image/png;base64,{img_b64}"}
-                        })
-
-                    response = client.complete(
-                        messages=[
-                            SystemMessage(content="Sei un assistente universitario che organizza e indicizza appunti."),
-                            UserMessage(content=contenuto_utente)
-                        ],
-                        model="gpt-4o-mini",
-                        max_tokens=2500
-                    )
-                    risultato_ai = response.choices[0].message.content
-
-                    path_appunto_pdf = f"appunti/{materia_selezionata}/{nome_base}.pdf"
-                    path_risultato_md = f"risultati/{materia_selezionata}/{nome_base}.md"
-
+        if file_caricato and materia_selezionata:
+            if st.button("🚀 AVVIA ELABORAZIONE INTELIGENTE", type="primary"):
+                with st.spinner("Elaborazione in corso..."):
+                    nome_base = nome_pers.strip().replace(" ", "_") if nome_pers else os.path.splitext(file_caricato.name)[0]
                     try:
-                        repo.create_file(path_appunto_pdf, f"Caricato PDF: {nome_base}", pdf_bytes, branch="main")
-                    except Exception:
-                        pass
+                        # Estrazione Immagini PDF
+                        pdf_bytes = file_caricato.read()
+                        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+                        immagini = [base64.b64encode(doc.load_page(i).get_pixmap(matrix=fitz.Matrix(2,2)).tobytes("png")).decode('utf-8') for i in range(len(doc))]
+                        
+                        # Chiamata AI Azure
+                        client = ChatCompletionsClient(endpoint="https://models.inference.ai.azure.com", credential=AzureKeyCredential(GITHUB_TOKEN))
+                        prompt = "Analizza questo appunto iPad. Crea: 1. Riassunto discorsivo. 2. Schema puntato. 3. 3 Domande a scelta multipla. 4. Parole chiave."
+                        
+                        contenuto = [{"type": "text", "text": prompt}] + [{"type": "image_url", "image_url": {"url": f"data:image/png;base64,{img}"}} for img in immagini]
+                        response = client.complete(
+                            messages=[SystemMessage(content="Sei un assistente universitario esperto."), UserMessage(content=contenuto)],
+                            model="gpt-4o-mini", max_tokens=2500
+                        )
+                        risultato = response.choices[0].message.content
 
-                    try:
-                        contents = repo.get_contents(path_risultato_md, ref="main")
-                        repo.update_file(contents.path, f"Aggiornato: {nome_base}", risultato_ai, contents.sha, branch="main")
-                        st.success("✅ Aggiornato con successo su GitHub!")
-                    except Exception:
-                        repo.create_file(path_risultato_md, f"Creato: {nome_base}", risultato_ai, branch="main")
-                        st.success("✅ Salvato con successo su GitHub!")
-
-                    st.balloons()
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Errore durante l'elaborazione: {e}")
-
-# ====================================================================
-# TAB 2: RICERCA AVANZATA & LETTURA RISULTATI
-# ====================================================================
-with tab_archivio:
-    st.write("")
-    query_ricerca = st.text_input("Cerca per titolo o #ParolaChiave (es: #Diritto):", "").strip().lower()
-    
-    try:
-        materie_folder = repo.get_contents("risultati", ref="main")
-        elenco_materie = [f.name for f in materie_folder if f.type == "dir"]
-        
-        tutti_i_file = []
-        for mat in elenco_materie:
-            files_in_mat = repo.get_contents(f"risultati/{mat}", ref="main")
-            for f in files_in_mat:
-                if f.name.endswith(".md"):
-                    tutti_i_file.append({"nome": f.name, "materia": mat, "download_url": f.download_url, "html_url": f.html_url})
-        
-        if len(tutti_i_file) == 0:
-            st.info("L'archivio è vuoto. Effettua il tuo primo caricamento!")
-        else:
-            risultati_filtrati = []
-            
-            with st.spinner("Scansione archivio cloud..."):
-                for f_info in tutti_i_file:
-                    nome_pulito = f_info["nome"].replace(".md", "").replace("_", " ").lower()
-                    
-                    if query_ricerca == "" or query_ricerca in nome_pulito:
-                        risultati_filtrati.append(f_info)
-                    else:
-                        res_cont = base64.b64decode(repo.get_contents(f"risultati/{f_info['materia']}/{f_info['nome']}", ref="main").content).decode("utf-8").lower()
-                        if query_ricerca in res_cont:
-                            risultati_filtrati.append(f_info)
-            
-            st.markdown(f"✨ *Trovati {len(risultati_filtrati)} elementi corrispettivi*")
-            st.write("")
-            
-            materie_visibili = set([f["materia"] for f in risultati_filtrati])
-            materie_ordinate = sorted(list(materie_visibili))
-            
-            for m in materie_ordinate:
-                with st.expander(f"📚 {m.upper()}", expanded=True):
-                    for f in risultati_filtrati:
-                        if f["materia"] == m:
-                            col_t, col_b = st.columns([5, 1])
-                            with col_t:
-                                st.markdown(f"▪️ **{f['nome'].replace('.md','').replace('_',' ')}**")
-                            with col_b:
-                                st.markdown(f"[👁️ Leggi Riassunto]({f['html_url']})")
-                                
-    except Exception:
-        st.info("Nessun riassunto trovato nell'archivio cloud.")
-
-# ====================================================================
-# TAB 3: GESTIONE ED ELIMINAZIONE FILE
-# ====================================================================
-with tab_gestisci:
-    st.write("")
-    tipo_cartella = st.radio("Seleziona categoria da ripulire:", ["Risultati AI (.md)", "PDF Originali (.pdf)"])
-    cartella_target = "risultati" if tipo_cartella == "Risultati AI (.md)" else "appunti"
-
-    try:
-        materie_folder = repo.get_contents(cartella_target, ref="main")
-        elenco_materie = [f.name for f in materie_folder if f.type == "dir"]
-        
-        if len(elenco_materie) == 0:
-            st.info("Nessuna cartella materia trovata.")
-        else:
-            materia_scelta = st.selectbox("Seleziona la materia da modificare:", elenco_materie, key="materia_del")
-            files_in_folder = repo.get_contents(f"{cartella_target}/{materia_scelta}", ref="main")
-            
-            st.write("---")
-            for file_gh in files_in_folder:
-                col_nome, col_azione = st.columns([5, 1])
-                with col_nome:
-                    st.markdown(f"📄 {file_gh.name}")
-                with col_azione:
-                    if st.button("Elimina ❌", key=f"del_{file_gh.path}"):
+                        # Salvataggio Github
+                        try: repo.create_file(f"appunti/{materia_selezionata}/{nome_base}.pdf", "Nuovo PDF", pdf_bytes, branch="main")
+                        except: pass
+                        
+                        path_md = f"risultati/{materia_selezionata}/{nome_base}.md"
                         try:
-                            repo.delete_file(file_gh.path, f"Eliminato file: {file_gh.name}", file_gh.sha, branch="main")
-                            st.success("File rimosso!")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Errore: {e}")
-    except Exception:
-        st.info("L'archivio è vuoto.")
+                            contents = repo.get_contents(path_md, ref="main")
+                            repo.update_file(contents.path, "Aggiornato MD", risultato, contents.sha, branch="main")
+                        except:
+                            repo.create_file(path_md, "Creato MD", risultato, branch="main")
+                        
+                        st.success("Completato!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Errore: {e}")
+
+# ----------------- PANNELLO 2: CERCA (Griglia) -----------------
+with col_cerca:
+    with st.container(border=True):
+        st.markdown("### Cerca nell'Archivio")
+        query = st.text_input("🔍 Cerca nell'Archivio... (#Tag o Materia)", label_visibility="collapsed").strip().lower()
+        
+        # Recupero file per la griglia
+        tutti_i_file = []
+        try:
+            for mat in materie_rilevate:
+                for f in repo.get_contents(f"risultati/{mat}", ref="main"):
+                    if f.name.endswith(".md"):
+                        tutti_i_file.append({"nome": f.name.replace(".md", ""), "url": f.html_url})
+        except: pass
+        
+        # Filtro
+        file_filtrati = [f for f in tutti_i_file if query in f["nome"].lower()] if query else tutti_i_file
+        
+        # Costruzione Griglia HTML
+        if file_filtrati:
+            grid_html = '<div class="file-grid">'
+            for f in file_filtrati:
+                # Titolo pulito (es: rimuove underscore)
+                titolo_pulito = f["nome"].replace("_", " ").title()
+                grid_html += f'''
+                <a href="{f["url"]}" target="_blank" class="file-card">
+                    <div class="file-icon">📄</div>
+                    <div class="file-title">{titolo_pulito}</div>
+                </a>
+                '''
+            grid_html += '</div>'
+            st.markdown(grid_html, unsafe_allow_html=True)
+        else:
+            st.info("Nessun appunto trovato.")
+
+# ----------------- PANNELLO 3: MANUTENZIONE -----------------
+with col_gestisci:
+    with st.container(border=True):
+        st.markdown("### Manutenzione")
+        st.markdown("Gestisci Archivio")
+        
+        materia_del = st.selectbox("Seleziona Materia:", materie_rilevate if materie_rilevate else ["Nessuna"])
+        if materia_del != "Nessuna":
+            try:
+                files_pdf = repo.get_contents(f"appunti/{materia_del}", ref="main")
+            except: files_pdf = []
+            try:
+                files_md = repo.get_contents(f"risultati/{materia_del}", ref="main")
+            except: files_md = []
+            
+            tutti_files_del = files_pdf + files_md
+            
+            if not tutti_files_del:
+                st.write("Cartella vuota.")
+            else:
+                for file_gh in tutti_files_del:
+                    # Riga singola per ogni file: Nome | Pulsante
+                    c1, c2 = st.columns([7, 3])
+                    with c1:
+                        icona = "📄" if file_gh.name.endswith(".pdf") else "📝"
+                        st.markdown(f"<div style='font-size:0.85rem; font-weight:600; padding-top:5px;'>{icona} {file_gh.name}</div>", unsafe_allow_html=True)
+                    with c2:
+                        if st.button("Elimina", key=f"del_{file_gh.path}"):
+                            try:
+                                repo.delete_file(file_gh.path, "Eliminato da App", file_gh.sha, branch="main")
+                                st.rerun()
+                            except Exception as e:
+                                st.error("Errore")
