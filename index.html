@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matora AI - Il mio Archivio Universitari</title>
+    <title>Matora AI - Il mio Archivio Universitario</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -17,10 +17,10 @@
     </div>
 
     <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs">
-        <div class="max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <span class="text-2xl">🧠</span>
-                <h1 class="text-xl font-bold tracking-tight text-slate-900">Matora AI <span class="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">v1.1</span></h1>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">Matora AI</h1>
             </div>
             <nav class="flex space-x-1 bg-slate-100 p-1 rounded-xl">
                 <button onclick="switchTab('caricamento')" id="tab-caricamento" class="px-4 py-2 text-sm font-medium rounded-lg bg-white text-slate-900 shadow-xs transition-all cursor-pointer">
@@ -41,25 +41,24 @@
                     <h2 class="text-2xl font-bold">Vuoi caricare un nuovo appunto dall'iPad?</h2>
                     <p class="text-blue-100 max-w-xl">Apri il pannello privato di caricamento protetto. Seleziona la materia, trascina il PDF della tua grafia e lascia che l'AI faccia la magia.</p>
                 </div>
-                <a href="https://archivio-appunti-cwvafyzpb2ngzy7ykazghu.streamlit.app/" target="_blank" class="bg-white text-indigo-700 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold shadow-md transition-all whitespace-nowrap transform hover:scale-[1.02]">
+                <a href="https://SOSTITUISCI_CON_IL_TUO_LINK.streamlit.app" target="_blank" class="bg-white text-indigo-700 hover:bg-blue-50 px-6 py-3 rounded-xl font-semibold shadow-md transition-all whitespace-nowrap transform hover:scale-[1.02]">
                     🚀 Apri Pannello Caricamento
                 </a>
             </div>
 
             <div class="space-y-4">
-                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">📂 Storico PDF Originali <span class="text-sm font-normal text-slate-500">(File caricati da iPad)</span></h3>
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">📂 Storico PDF Originali <span class="text-sm font-normal text-slate-500">(File caricati)</span></h3>
                 <div id="lista-pdf-storico" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <p class="text-slate-500 italic col-span-full">Caricamento dello storico in corso...</p>
+                    <p class="text-slate-500 italic col-span-full">Controllo storico in corso...</p>
                 </div>
             </div>
         </section>
-
 
         <section id="sez-results" class="space-y-6 hidden">
             <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row gap-4 items-center">
                 <div class="relative flex-1 w-full">
                     <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">🔍</span>
-                    <input type="text" id="barra-ricerca" oninput="filtraAppunti()" placeholder="Cerca tra gli appunti per titolo o #ParolaChiave (es: #Termodinamica)..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm">
+                    <input type="text" id="barra-ricerca" oninput="filtraAppunti()" placeholder="Cerca tra gli appunti per titolo o #ParolaChiave..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm">
                 </div>
                 <div class="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-2 rounded-lg whitespace-nowrap" id="contatore-risultati">
                     0 appunti trovati
@@ -74,11 +73,9 @@
     </main>
 
     <script>
-        // CONFIGURAZIONE REPOSITORY (Sostituisci se i dati sono diversi)
         const USERNAME = "sofi-sofi-sofi";
         const REPO = "archivio-appunti";
 
-        // Funzione per cambiare Tab/Sezione sul sito
         function switchTab(tab) {
             const btnCaricamento = document.getElementById('tab-caricamento');
             const btnRisultati = document.getElementById('tab-risultati');
@@ -93,27 +90,25 @@
             } else {
                 btnRisultati.className = "px-4 py-2 text-sm font-medium rounded-lg bg-white text-slate-900 shadow-xs transition-all cursor-pointer";
                 btnCaricamento.className = "px-4 py-2 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer";
-                sezRisultati.classList.remove('hidden');
                 sezCaricamento.classList.add('hidden');
-                // Carichiamo i risultati solo quando l'utente apre la tab per la prima volta
+                sezRisultati.classList.remove('hidden');
                 caricaArchivioRisultati();
             }
         }
 
-        // Funzione per leggere lo storico dei PDF originali (Cartella /appunti)
         async function caricaStoricoPDF() {
             const container = document.getElementById('lista-pdf-storico');
             try {
-                // Leggiamo le materie dentro la cartella appunti
                 const responseMaterie = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/appunti`);
-                if (!responseMaterie.ok) throw new Error();
+                if (!responseMaterie.ok) {
+                    container.innerHTML = `<p class="text-slate-500 italic col-span-full">Nessun PDF caricato finora. Le cartelle verranno create al primo caricamento!</p>`;
+                    return;
+                }
                 const materie = await responseMaterie.json();
-
                 let htmlContent = "";
 
-                for (let mat of materie) {
+                for (let mat of Array.isArray(materie) ? : []) {
                     if (mat.type === 'dir') {
-                        // Leggiamo i file PDF dentro ogni materia
                         const resFiles = await fetch(mat.url);
                         const files = await resFiles.json();
                         for (let file of files) {
@@ -131,34 +126,34 @@
                         }
                     }
                 }
-                container.innerHTML = htmlContent || `<p class="text-slate-500 italic col-span-full">Nessun PDF caricato finora.</p>`;
+                container.innerHTML = htmlContent || `<p class="text-slate-500 italic col-span-full">Nessun PDF presente.</p>`;
             } catch (e) {
-                container.innerHTML = `<p class="text-slate-500 italic col-span-full">Nessun PDF presente o errore di caricamento dello storico.</p>`;
+                container.innerHTML = `<p class="text-slate-500 italic col-span-full">Nessun PDF presente.</p>`;
             }
         }
 
-        // Struttura dati globale per la ricerca avanzata
         let tuttiGliAppunti = [];
 
-        // Funzione per caricare l'archivio dei testi AI (Cartella /risultati)
         async function caricaArchivioRisultati() {
             const container = document.getElementById('contenitore-materie');
-            if (tuttiGliAppunti.length > 0) return; // Evita di ricaricare se già fatto
+            if (tuttiGliAppunti.length > 0) return;
 
             try {
                 const responseMaterie = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/risultati`);
-                if (!responseMaterie.ok) throw new Error();
+                if (!responseMaterie.ok) {
+                    container.innerHTML = `<p class="text-slate-500 italic">L'archivio è vuoto. Genera il tuo primo appunto per iniziare!</p>`;
+                    document.getElementById('contatore-risultati').innerText = `0 appunti trovati`;
+                    return;
+                }
                 const materie = await responseMaterie.json();
-
                 tuttiGliAppunti = [];
 
-                for (let mat of materie) {
+                for (let mat of Array.isArray(materie) ? : []) {
                     if (mat.type === 'dir') {
                         const resFiles = await fetch(mat.url);
                         const files = await resFiles.json();
                         for (let file of files) {
                             if (file.name.endsWith('.md')) {
-                                // Scarichiamo il contenuto del file markdown per estrarre i tag delle parole chiave
                                 const resContenuto = await fetch(file.download_url);
                                 const testoFile = await resContenuto.text();
 
@@ -174,21 +169,19 @@
                 }
                 renderizzaAppunti(tuttiGliAppunti);
             } catch (e) {
-                container.innerHTML = `<p class="text-rose-500 font-medium">Errore nel caricamento dei risultati AI da GitHub.</p>`;
+                container.innerHTML = `<p class="text-slate-500 italic">Nessun risultato trovato o errore temporaneo di rete.</p>`;
             }
         }
 
-        // Funzione grafica per stampare a schermo l'elenco dei risultati divisi per materia
         function renderizzaAppunti(lista) {
             const container = document.getElementById('contenitore-materie');
-            document.getElementById('contatore-results').innerText = `${lista.length} appunti trovati`;
+            document.getElementById('contatore-risultati').innerText = `${lista.length} appunti trovati`;
             
             if (lista.length === 0) {
-                container.innerHTML = `<p class="text-slate-500 italic">Nessun appunto corrisponde ai criteri di ricerca.</p>`;
+                container.innerHTML = `<p class="text-slate-500 italic">Nessun appunto corrisponde alla ricerca.</p>`;
                 return;
             }
 
-            // Raggruppiamo gli appunti filtrati per materia
             const mappeMaterie = {};
             lista.forEach(appunto => {
                 if (!mappeMaterie[appunto.materia]) mappeMaterie[appunto.materia] = [];
@@ -204,12 +197,12 @@
                         </h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             ${mappeMaterie[materia].map(appunto => `
-                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-150 hover:border-indigo-300 transition-all flex flex-col justify-between gap-3">
+                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-indigo-300 transition-all flex flex-col justify-between gap-3">
                                     <div>
-                                        <p class="font-semibold text-slate-900 text-sm sm:text-base">${appunto.nome}</p>
+                                        <p class="font-semibold text-slate-900 text-sm">${appunto.nome}</p>
                                     </div>
                                     <div class="flex items-center justify-end">
-                                        <a href="${appunto.url}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-xs transition-all">🧠 Vedi Riassunto & Quiz</a>
+                                        <a href="${appunto.url}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-xs transition-all">🧠 Vedi Riassunto</a>
                                     </div>
                                 </div>
                             `).join('')}
@@ -220,7 +213,6 @@
             container.innerHTML = htmlCompleto;
         }
 
-        // Funzione di filtraggio in tempo reale (Barra di Ricerca)
         function filtraAppunti() {
             const query = document.getElementById('barra-ricerca').value.toLowerCase().trim();
             if (query === "") {
@@ -228,16 +220,11 @@
                 return;
             }
             const filtrati = tuttiGliAppunti.filter(appunto => {
-                return accantoContiene(appunto.nome.toLowerCase(), query) || accantoContiene(appunto.testoCompleto, query);
+                return appunto.nome.toLowerCase().includes(query) || appunto.testoCompleto.includes(query);
             });
             renderizzaAppunti(filtrati);
         }
 
-        function accantoContiene(testo, query) {
-            return testo.includes(query);
-        }
-
-        // Avvio automatico al caricamento della pagina dello storico dei PDF
         window.onload = () => {
             caricaStoricoPDF();
         };
