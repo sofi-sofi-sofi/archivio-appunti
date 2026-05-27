@@ -134,7 +134,7 @@ CIRCUIT_SVG = f"""
 # ── CSS ────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 html, body, .stApp, [data-testid="stAppViewContainer"], .main {{
     background-color: {BG} !important;
@@ -152,16 +152,25 @@ h1,h2,h3,h4,h5,h6,p,span,label,li,div {{
 #MainMenu, footer, header {{ visibility: hidden !important; }}
 [data-testid="stToolbar"] {{ display:none !important; }}
 
-/* TITOLO MATORA */
+/* TITOLO MATORA — Orbitron identico alla foto */
 .matora-title {{
-    font-size:2rem; font-weight:900; letter-spacing:-0.5px; line-height:1;
-    background:linear-gradient(90deg,#ff007f,#9d00ff);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-    margin:0 0 2px 0;
+    font-family: 'Orbitron', sans-serif !important;
+    font-size: 1.85rem; font-weight: 900;
+    letter-spacing: 3px; line-height: 1;
+    margin: 0 0 4px 0;
+    display: inline-flex; align-items: baseline; gap: 8px;
+}}
+.matora-title-white {{
+    color: {TEXT} !important; -webkit-text-fill-color: {TEXT} !important;
+}}
+.matora-title-ai {{
+    background: linear-gradient(90deg, #ff007f, #9d00ff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }}
 .matora-sub {{
-    font-size:0.88rem; font-weight:400;
-    color:{HDR_SUB} !important; -webkit-text-fill-color:{HDR_SUB} !important; margin:0;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.88rem; font-weight: 400;
+    color: {HDR_SUB} !important; -webkit-text-fill-color: {HDR_SUB} !important; margin: 0;
 }}
 
 /* PILLOLE */
