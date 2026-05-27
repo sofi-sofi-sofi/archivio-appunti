@@ -7,94 +7,128 @@ from azure.core.credentials import AzureKeyCredential
 from github import Github
 import fitz  # PyMuPDF
 
-# 1. Configurazione della pagina con il brand Matora AI
+# 1. Configurazione della pagina
 st.set_page_config(
-    page_title="Matora AI - Plancia di Comando", 
+    page_title="Matora AI", 
     page_icon="logo_matora.png", 
     layout="wide"
 )
 
-# 2. Palette di colori custom estratta dal tuo logo (Deep Violet, Cyan Neon, Lilac)
+# 2. Nuova interfaccia Dark Mode coordinata al logo (Sfondo scuro, Fucsia/Viola Elettrico, Scritte Chiare)
 st.markdown("""
     <style>
-    /* Sfondo principale e testi */
+    /* Sfondo dell'applicazione */
     .stApp {
-        background-color: #0b0816;
-        color: #e2e0ff;
+        background-color: #0b071a !important;
+        color: #f1edff !important;
     }
     
     /* Titoli principali */
     h1 {
-        color: #00f0ff !important;
+        color: #e25eff !important;
         font-family: 'Inter', sans-serif;
         font-weight: 800;
-        text-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        text-shadow: 0 0 15px rgba(226, 94, 255, 0.3);
     }
     h2, h3, h4 {
-        color: #b7b3ff !important;
+        color: #d1c9ff !important;
     }
     
-    /* Stile dei Tab */
+    /* Contenitore dei Tab */
     .stTabs [data-baseweb="tab-list"] {
-        background-color: #131026;
+        background-color: #160f33 !important;
         border-radius: 12px;
-        padding: 5px;
+        padding: 6px;
         border-bottom: none;
     }
+    
+    /* Singolo Tab (Non selezionato) */
     .stTabs [data-baseweb="tab"] {
-        color: #9a95cc !important;
+        color: #a499e0 !important;
         font-weight: 600;
         border-radius: 8px;
         padding: 10px 20px;
-        transition: all 0.3s ease;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #00f0ff !important;
-        color: #0b0816 !important;
-        box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        background-color: transparent !important;
+        transition: all 0.2s ease;
     }
     
-    /* Bottoni */
+    /* Tab Selezionato attivo */
+    .stTabs [aria-selected="true"] {
+        background-color: #e25eff !important;
+        color: #0b071a !important;
+        font-weight: 700 !important;
+        box-shadow: 0 0 15px rgba(226, 94, 255, 0.5);
+    }
+    
+    /* Pulsanti (Carica, Elimina, ecc.) */
     div.stButton > button:first-child {
-        background: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
-        color: white !important;
-        border: none;
-        padding: 12px 24px;
-        font-weight: bold;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);
-        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #e25eff 0%, #891aff 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        padding: 12px 28px !important;
+        font-weight: 700 !important;
+        font-size: 1rem !important;
+        border-radius: 10px !important;
+        box-shadow: 0 4px 15px rgba(137, 26, 255, 0.4) !important;
+        transition: all 0.3s ease !important;
+        width: auto;
     }
     div.stButton > button:first-child:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 240, 255, 0.5);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 22px rgba(226, 94, 255, 0.6) !important;
     }
     
-    /* Scatole di input, selectbox e uploader */
+    /* Campi di testo, Selettori e File Uploader */
     .stTextInput>div>div>input, .stSelectbox>div>div, .stFileUploader>div>div {
-        background-color: #171430 !important;
-        border: 1px solid #312b5c !important;
-        color: #e2e0ff !important;
+        background-color: #1b1340 !important;
+        border: 2px solid #362973 !important;
+        color: #ffffff !important;
         border-radius: 10px !important;
-    }
-    .stTextInput>div>div>input:focus {
-        border-color: #00f0ff !important;
-        box-shadow: 0 0 10px rgba(0, 240, 255, 0.3) !important;
+        font-size: 1rem !important;
     }
     
-    /* Expander dell'archivio risultati */
+    /* Testi all'interno dei menu a tendina e input per massima leggibilità */
+    .stTextInput input, .stSelectbox div[data-baseweb="select"] {
+        color: #ffffff !important;
+    }
+    
+    /* Quando selezioni un campo (Focus) */
+    .stTextInput>div>div>input:focus, .stSelectbox>div>div:focus-within {
+        border-color: #e25eff !important;
+        box-shadow: 0 0 12px rgba(226, 94, 255, 0.4) !important;
+    }
+    
+    /* Scatole dei Risultati (Expander) */
     .streamlit-expanderHeader {
-        background-color: #171430 !important;
-        border: 1px solid #27224d !important;
+        background-color: #160f33 !important;
+        border: 1px solid #2d2066 !important;
         border-radius: 10px !important;
-        color: #00f0ff !important;
+        color: #f1edff !important;
+    }
+    .streamlit-expanderContent {
+        background-color: #0e0924 !important;
+        border-left: 1px solid #2d2066 !important;
+        border-right: 1px solid #2d2066 !important;
+        border-bottom: 1px solid #2d2066 !important;
+        border-radius: 0 0 10px 10px !important;
+    }
+
+    /* Link per aprire i file */
+    a {
+        color: #e25eff !important;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline !important;
     }
     
-    /* Banner di avviso temporaneo */
+    /* Banner di avviso in alto */
     .stAlert {
-        background-color: #26121a !important;
-        border: 1px solid #ff4b4b !important;
-        color: #ffb3b3 !important;
+        background-color: #260f1c !important;
+        border: 1px solid #e25eff !important;
+        color: #ffd6fa !important;
+        border-radius: 10px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -109,18 +143,18 @@ g = Github(GITHUB_TOKEN)
 repo = g.get_repo(NOME_REPOSITORY)
 
 # Banner Scadenza Token coordinato cromaticamente
-st.warning("⚠️ **Attenzione: Scadenza Token AI** Il sistema scadrà il **26/05/2027**. Dopo questa data andrà rinnovato nei Secrets.")
+st.warning("⚠️ **Attenzione: Scadenza Token AI** Il sistema scadrà il **26/05/2027**.")
 
-# 3. Header principale affiancando il tuo Logo e il Titolo Grande
+# Header principale affiancando il tuo Logo e il Titolo Grande
 col_logo, col_titolo = st.columns([1, 6])
 with col_logo:
     if os.path.exists("logo_matora.png"):
         st.image("logo_matora.png", width=110)
     else:
-        st.write("🔮") # Icona di riserva se l'immagine non è ancora caricata su GitHub
+        st.write("🔮") 
 with col_titolo:
     st.markdown("<h1 style='margin-top: 10px;'>Matora AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #9a95cc;'>L'ecosistema intelligente per i tuoi appunti universitari dall'iPad</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #a499e0;'>L'ecosistema intelligente per i tuoi appunti universitari dall'iPad</p>", unsafe_allow_html=True)
 
 st.write("")
 
@@ -139,7 +173,7 @@ except Exception:
     pass
 
 if len(materie_rilevate) == 0:
-    materie_rilevate = ["Matematica", "Fisica", "Chimica", "Informatica", "Biologia"]
+    materie_rilevate = []
 else:
     materie_rilevate.sort()
 
@@ -221,7 +255,7 @@ with tab_carica:
                     risultato_ai = response.choices[0].message.content
 
                     path_appunto_pdf = f"appunti/{materia_selezionata}/{nome_base}.pdf"
-                    path_risultato_md = f"risultati/{materia_selezionata}/{nome_base}.md"
+                    path_risultato_md = f"results/{materia_selezionata}/{nome_base}.md"
 
                     try:
                         repo.create_file(path_appunto_pdf, f"Caricato PDF: {nome_base}", pdf_bytes, branch="main")
@@ -308,7 +342,7 @@ with tab_gestisci:
         elenco_materie = [f.name for f in materie_folder if f.type == "dir"]
         
         if len(elenco_materie) == 0:
-            st.info("Nessuna cartella materia trovata.")
+            st.info("Nessuna cartella materia trouvata.")
         else:
             materia_scelta = st.selectbox("Seleziona la materia da modificare:", elenco_materie, key="materia_del")
             files_in_folder = repo.get_contents(f"{cartella_target}/{materia_scelta}", ref="main")
